@@ -1,0 +1,60 @@
+Given a sorted dictionary of an alien language having N words and k starting alphabets of standard dictionary. Find the order of characters in the alien language.
+Note: Many orders may be possible for a particular test case, thus you may return any valid order and output will be 1 if the order of string returned by the function is correct else 0 denoting incorrect string returned.
+ 
+
+Example 1:
+
+Input: 
+N = 5, K = 4
+dict = {"baa","abcd","abca","cab","cad"}
+Output:
+1
+Explanation:
+Here order of characters is 
+'b', 'd', 'a', 'c' Note that words are sorted 
+and in the given language "baa" comes before 
+"abcd", therefore 'b' is before 'a' in output.
+Similarly we can find other orders.
+
+
+from collections import defaultdict, deque
+
+def alienOrder(N, K, words):
+    graph = defaultdict(list)
+    indegree = {c: 0 for word in words for c in word}
+
+    # Construct the graph and calculate indegrees.
+    for i in range(1, N):
+        word1, word2 = words[i - 1], words[i]
+        for c1, c2 in zip(word1, word2):
+            if c1 != c2:
+                graph[c1].append(c2)
+                indegree[c2] += 1
+                break
+
+    # Perform topological sort.
+    result = []
+    queue = deque([c for c in indegree if indegree[c] == 0])
+
+    while queue:
+        c = queue.popleft()
+        result.append(c)
+        for neighbor in graph[c]:
+            indegree[neighbor] -= 1
+            if indegree[neighbor] == 0:
+                queue.append(neighbor)
+
+    # Check for a valid order.
+    if len(result) != len(indegree):
+        return 0
+    return 1, ''.join(result)
+
+# Example usage:
+N = 5
+K = 4
+words = ["baa", "abcd", "abca", "cab", "cad"]
+result, order = alienOrder(N, K, words)
+if result:
+    print(f"Order of characters: {order}")
+else:
+    print("No valid order found.")
